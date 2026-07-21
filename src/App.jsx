@@ -5,9 +5,15 @@ import { Clock, ShieldHalf } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('user');
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => localStorage.getItem('isAdminLoggedIn') === 'true');
+  const [currentPage, setCurrentPage] = useState(() => localStorage.getItem('isAdminLoggedIn') === 'true' ? 'admin' : 'user');
 
   const checkAdminLogin = () => {
+    if (isAdminLoggedIn) {
+      setCurrentPage('admin');
+      return;
+    }
+
     Swal.fire({
       html: `
         <div class="flex flex-col items-center pt-4">
@@ -32,6 +38,8 @@ function App() {
     }).then((result) => {
       if (result.isConfirmed) {
         if (result.value.u === 'admin' && result.value.p === 'admin444') {
+          localStorage.setItem('isAdminLoggedIn', 'true');
+          setIsAdminLoggedIn(true);
           setCurrentPage('admin');
           Swal.fire({
             toast: true,
@@ -56,7 +64,11 @@ function App() {
       confirmButtonText: 'ยืนยัน',
       confirmButtonColor: '#ef4444'
     }).then((r) => {
-      if (r.isConfirmed) setCurrentPage('user');
+      if (r.isConfirmed) {
+        localStorage.removeItem('isAdminLoggedIn');
+        setIsAdminLoggedIn(false);
+        setCurrentPage('user');
+      }
     });
   };
 

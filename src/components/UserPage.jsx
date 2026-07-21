@@ -258,6 +258,6 @@ export default function UserPage() {
           </form>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

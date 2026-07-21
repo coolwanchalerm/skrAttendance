@@ -111,7 +111,7 @@ export default function AdminPage() {
   const handleEdit = async (id, currentTime) => {
     const { value: newTime } = await Swal.fire({
       title: 'แก้ไขเวลา',
-      html: \`<input id="swal-time" type="time" class="swal2-input" value="\${currentTime}">\`,
+      html: `<input id="swal-time" type="time" class="swal2-input" value="${currentTime}">`,
       showCancelButton: true,
       preConfirm: () => document.getElementById('swal-time').value
     });
@@ -141,7 +141,7 @@ export default function AdminPage() {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-    XLSX.writeFile(wb, \`Report_\${filterDate}.xlsx\`);
+    XLSX.writeFile(wb, `Report_${filterDate}.xlsx`);
   };
 
   const importCSV = (e) => {
@@ -150,7 +150,7 @@ export default function AdminPage() {
     const reader = new FileReader();
     reader.onload = async (event) => {
       const text = event.target.result;
-      const lines = text.split('\\n');
+      const lines = text.split('\n');
       const newEmp = [];
       for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
@@ -161,7 +161,7 @@ export default function AdminPage() {
         setLoading(true);
         const res = await apiCall('apiImportEmployees', newEmp);
         if (res.success) {
-          Swal.fire('สำเร็จ', \`นำเข้า \${newEmp.length} รายชื่อ\`, 'success');
+          Swal.fire('สำเร็จ', `นำเข้า ${newEmp.length} รายชื่อ`, 'success');
           loadData();
         } else {
           Swal.fire('Error', res.message, 'error');
@@ -174,7 +174,20 @@ export default function AdminPage() {
   };
 
   const viewPhoto = (url) => {
-    Swal.fire({ imageUrl: url, showConfirmButton: false, showCloseButton: true, width: 'auto' });
+    let fileId = null;
+    try {
+      if (url.includes('id=')) {
+        fileId = url.split('id=')[1].split('&')[0];
+      } else if (url.includes('/file/d/')) {
+        fileId = url.split('/file/d/')[1].split('/')[0];
+      }
+    } catch (e) {}
+
+    if (fileId) {
+      window.open(`https://drive.google.com/file/d/${fileId}/view`, '_blank');
+    } else {
+      Swal.fire({ imageUrl: url, showConfirmButton: false, showCloseButton: true, width: 'auto' });
+    }
   };
 
   return (
@@ -314,11 +327,11 @@ export default function AdminPage() {
                         ) : <span className="text-slate-300">-</span>}
                       </td>
                       <td className="py-3 px-6 text-center">
-                        <span className={\`px-3 py-1 rounded-full text-xs font-semibold border \${
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
                           rec.status === 'สาย' ? 'bg-orange-50 text-orange-600 border-orange-200' :
                           rec.status === 'ไม่ลงเวลา' ? 'bg-rose-50 text-rose-600 border-rose-200' : 
                           'bg-emerald-50 text-emerald-600 border-emerald-200'
-                        }\`}>
+                        }`}>
                           {rec.status}
                         </span>
                       </td>
@@ -364,7 +377,7 @@ export default function AdminPage() {
 
 function StatCard({ title, value, icon: Icon, color }) {
   return (
-    <div className={\`bg-gradient-to-br \${color} rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group\`}>
+    <div className={`bg-gradient-to-br ${color} rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group`}>
       <div className="absolute -right-4 -top-4 opacity-20 transform group-hover:scale-110 transition-transform duration-500">
         <Icon size={120} />
       </div>
