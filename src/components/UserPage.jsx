@@ -236,8 +236,7 @@ export default function UserPage() {
                     <div className="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-300">
                       <Camera size={32} />
                     </div>
-                    <p className="text-slate-600 font-medium">แตะเพื่อถ่ายรูป / เลือกรูป</p>
-                    <p className="text-slate-400 text-sm mt-1">ไฟล์ภาพ JPEG/PNG</p>
+                    <p className="text-slate-600 font-medium mt-2">แตะเพื่อถ่ายรูป</p>
                   </label>
                 )}
               </div>
