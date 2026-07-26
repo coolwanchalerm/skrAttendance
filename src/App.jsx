@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UserPage from './components/UserPage';
 import AdminPage from './components/AdminPage';
 import { Clock, ShieldHalf } from 'lucide-react';
@@ -7,6 +7,39 @@ import Swal from 'sweetalert2';
 function App() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => localStorage.getItem('isAdminLoggedIn') === 'true');
   const [currentPage, setCurrentPage] = useState(() => localStorage.getItem('isAdminLoggedIn') === 'true' ? 'admin' : 'user');
+
+  useEffect(() => {
+    let timeoutId;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      if (isAdminLoggedIn) {
+        timeoutId = setTimeout(() => {
+          localStorage.removeItem('isAdminLoggedIn');
+          setIsAdminLoggedIn(false);
+          setCurrentPage('user');
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+            icon: 'info',
+            title: 'ออกจากระบบอัตโนมัติเนื่องจากไม่มีการใช้งานเกิน 1 นาที'
+          });
+        }, 60000); // 1 minute
+      }
+    };
+
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    events.forEach(event => window.addEventListener(event, resetTimer));
+
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+  }, [isAdminLoggedIn]);
 
   const checkAdminLogin = () => {
     if (isAdminLoggedIn) {
