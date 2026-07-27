@@ -11,10 +11,12 @@ import {
   ChevronLeft, ChevronRight, LayoutDashboard, Database
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import EmployeeManager from './EmployeeManager';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 export default function AdminPage() {
+  const [activeTab, setActiveTab] = useState('attendance');
   const [records, setRecords] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -198,18 +200,35 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex justify-between items-center bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-white">
+      {/* Header with Tabs */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-white gap-4">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
             <LayoutDashboard size={24} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
-            <p className="text-slate-500 text-sm">ภาพรวมการลงเวลาประจำวัน</p>
+            <h2 className="text-2xl font-bold text-slate-800">ผู้ดูแลระบบ</h2>
+            <p className="text-slate-500 text-sm">จัดการระบบลงเวลาและพนักงาน</p>
           </div>
         </div>
+        <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
+          <button 
+            onClick={() => setActiveTab('attendance')}
+            className={`flex-1 sm:flex-none px-6 py-2 rounded-lg font-medium text-sm transition-all ${activeTab === 'attendance' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            ประวัติลงเวลา
+          </button>
+          <button 
+            onClick={() => setActiveTab('employees')}
+            className={`flex-1 sm:flex-none px-6 py-2 rounded-lg font-medium text-sm transition-all ${activeTab === 'employees' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            จัดการพนักงาน
+          </button>
+        </div>
       </div>
+
+      {activeTab === 'attendance' ? (
+        <div className="space-y-6">
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

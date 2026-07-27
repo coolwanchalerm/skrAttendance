@@ -40,8 +40,9 @@ export const apiCall = async (action, data = null) => {
     }
   }
 
-  // 2. Clear cache if admin imports new employees
-  if (action === 'apiImportEmployees') {
+  // 2. Clear cache if admin modifies employees
+  const modifyActions = ['apiImportEmployees', 'apiAddEmployee', 'apiUpdateEmployee', 'apiDeleteEmployee'];
+  if (modifyActions.includes(action)) {
     localStorage.removeItem(CACHE_KEY);
     localStorage.removeItem(CACHE_TIME_KEY);
   }
