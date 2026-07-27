@@ -389,7 +389,8 @@ export default function AdminPage() {
             <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages} className="p-1.5 rounded border border-slate-200 disabled:opacity-50 hover:bg-slate-50"><ChevronRight size={16} /></button>
           </div>
         </div>
-        </div>
+      </div>
+      </div>
       ) : (
         <EmployeeManager />
       )}
