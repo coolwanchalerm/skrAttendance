@@ -25,28 +25,67 @@ export default function EmployeeManager() {
     loadEmployees();
   }, []);
 
+  // Get unique departments from loaded employees
+  const departments = [...new Set(employees.map(e => e.dept).filter(Boolean))].sort();
+
+  // Get next sequential ID
+  const getNextId = () => {
+    if (employees.length === 0) return '001';
+    const maxId = employees.reduce((max, e) => {
+      const num = parseInt(String(e.id).replace(/\D/g, ''), 10);
+      return isNaN(num) ? max : Math.max(max, num);
+    }, 0);
+    return String(maxId + 1).padStart(3, '0');
+  };
+
+  const validatePhone = (phone) => {
+    return /^0\d{9}$/.test(phone.replace(/\D/g, ''));
+  };
+
   const handleAddEmployee = async () => {
+    const nextId = getNextId();
+    const deptOptions = departments.map(d => `<option value="${d}">${d}</option>`).join('');
+
     const { value: formValues } = await Swal.fire({
       title: 'เพิ่มพนักงานใหม่',
       html: `
-        <input id="swal-input1" class="swal2-input" placeholder="รหัสพนักงาน (ID)">
-        <input id="swal-input2" class="swal2-input" placeholder="ชื่อ - นามสกุล">
-        <input id="swal-input3" class="swal2-input" placeholder="เบอร์โทรศัพท์">
-        <input id="swal-input4" class="swal2-input" placeholder="กลุ่มสาระการเรียนรู้ / แผนก">
+        <div style="text-align:left; padding: 0 8px">
+          <label style="font-size:13px; color:#64748b; font-weight:600">รหัสพนักงาน</label>
+          <input id="swal-input1" class="swal2-input" value="${nextId}" style="font-family:monospace">
+          <label style="font-size:13px; color:#64748b; font-weight:600">ชื่อ - นามสกุล</label>
+          <input id="swal-input2" class="swal2-input" placeholder="เช่น นายสมชาย ใจดี">
+          <label style="font-size:13px; color:#64748b; font-weight:600">เบอร์โทรศัพท์ <span style="color:#94a3b8">(10 หลัก ขึ้นต้นด้วย 0)</span></label>
+          <input id="swal-input3" class="swal2-input" placeholder="0812345678" maxlength="10" inputmode="numeric">
+          <label style="font-size:13px; color:#64748b; font-weight:600">กลุ่มสาระ / แผนก</label>
+          <select id="swal-input4" class="swal2-input" style="appearance:auto">
+            <option value="">-- เลือกกลุ่มสาระ --</option>
+            ${deptOptions}
+          </select>
+        </div>
       `,
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonText: 'บันทึก',
       cancelButtonText: 'ยกเลิก',
       confirmButtonColor: '#4f46e5',
+      didOpen: () => {
+        // Allow only numeric input for phone
+        document.getElementById('swal-input3').addEventListener('input', (e) => {
+          e.target.value = e.target.value.replace(/\D/g, '');
+        });
+      },
       preConfirm: () => {
-        const id = document.getElementById('swal-input1').value;
-        const name = document.getElementById('swal-input2').value;
-        const phone = document.getElementById('swal-input3').value;
+        const id = document.getElementById('swal-input1').value.trim();
+        const name = document.getElementById('swal-input2').value.trim();
+        const phone = document.getElementById('swal-input3').value.trim();
         const dept = document.getElementById('swal-input4').value;
-        
+
         if (!id || !name || !phone || !dept) {
           Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบถ้วน');
+          return false;
+        }
+        if (!validatePhone(phone)) {
+          Swal.showValidationMessage('เบอร์โทรต้องเป็นตัวเลข 10 หลัก และขึ้นต้นด้วย 0');
           return false;
         }
         return { id, name, phone, dept };
@@ -70,27 +109,49 @@ export default function EmployeeManager() {
   };
 
   const handleEditEmployee = async (emp) => {
+    const deptOptions = departments.map(d =>
+      `<option value="${d}" ${d === emp.dept ? 'selected' : ''}>${d}</option>`
+    ).join('');
+
     const { value: formValues } = await Swal.fire({
       title: 'แก้ไขข้อมูลพนักงาน',
       html: `
-        <input id="swal-edit1" class="swal2-input" value="${emp.id}" disabled title="ไม่สามารถแก้ไขรหัสได้">
-        <input id="swal-edit2" class="swal2-input" placeholder="ชื่อ - นามสกุล" value="${emp.name}">
-        <input id="swal-edit3" class="swal2-input" placeholder="เบอร์โทรศัพท์" value="${emp.phone}">
-        <input id="swal-edit4" class="swal2-input" placeholder="กลุ่มสาระการเรียนรู้ / แผนก" value="${emp.dept}">
+        <div style="text-align:left; padding: 0 8px">
+          <label style="font-size:13px; color:#64748b; font-weight:600">รหัสพนักงาน</label>
+          <input id="swal-edit1" class="swal2-input" value="${emp.id}" disabled style="font-family:monospace; background:#f1f5f9; color:#94a3b8">
+          <label style="font-size:13px; color:#64748b; font-weight:600">ชื่อ - นามสกุล</label>
+          <input id="swal-edit2" class="swal2-input" value="${emp.name}">
+          <label style="font-size:13px; color:#64748b; font-weight:600">เบอร์โทรศัพท์ <span style="color:#94a3b8">(10 หลัก ขึ้นต้นด้วย 0)</span></label>
+          <input id="swal-edit3" class="swal2-input" value="${emp.phone}" maxlength="10" inputmode="numeric">
+          <label style="font-size:13px; color:#64748b; font-weight:600">กลุ่มสาระ / แผนก</label>
+          <select id="swal-edit4" class="swal2-input" style="appearance:auto">
+            <option value="">-- เลือกกลุ่มสาระ --</option>
+            ${deptOptions}
+          </select>
+        </div>
       `,
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonText: 'อัปเดต',
       cancelButtonText: 'ยกเลิก',
       confirmButtonColor: '#4f46e5',
+      didOpen: () => {
+        document.getElementById('swal-edit3').addEventListener('input', (e) => {
+          e.target.value = e.target.value.replace(/\D/g, '');
+        });
+      },
       preConfirm: () => {
         const id = document.getElementById('swal-edit1').value;
-        const name = document.getElementById('swal-edit2').value;
-        const phone = document.getElementById('swal-edit3').value;
+        const name = document.getElementById('swal-edit2').value.trim();
+        const phone = document.getElementById('swal-edit3').value.trim();
         const dept = document.getElementById('swal-edit4').value;
-        
+
         if (!name || !phone || !dept) {
           Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบถ้วน');
+          return false;
+        }
+        if (!validatePhone(phone)) {
+          Swal.showValidationMessage('เบอร์โทรต้องเป็นตัวเลข 10 หลัก และขึ้นต้นด้วย 0');
           return false;
         }
         return { id, name, phone, dept };
@@ -140,14 +201,14 @@ export default function EmployeeManager() {
     }
   };
 
-  const filteredEmployees = employees.filter(e => 
-    String(e.name).toLowerCase().includes(searchTerm.toLowerCase()) || 
-    String(e.id).includes(searchTerm) || 
+  const filteredEmployees = employees.filter(e =>
+    String(e.name).toLowerCase().includes(searchTerm.toLowerCase()) ||
+    String(e.id).includes(searchTerm) ||
     String(e.dept).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
@@ -158,20 +219,20 @@ export default function EmployeeManager() {
             <Users className="text-indigo-600" />
             จัดการรายชื่อพนักงาน
           </h2>
-          <p className="text-slate-500 mt-1">เพิ่ม ลบ แก้ไข ข้อมูลพนักงานและกลุ่มสาระการเรียนรู้</p>
+          <p className="text-slate-500 mt-1">พนักงานทั้งหมด {employees.length} คน | {departments.length} กลุ่มสาระ</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="ค้นหาชื่อ, รหัส, แผนก..." 
+            <input
+              type="text"
+              placeholder="ค้นหาชื่อ, รหัส, แผนก..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full sm:w-64 pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white transition-all"
             />
           </div>
-          <button 
+          <button
             onClick={handleAddEmployee}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200"
           >
@@ -223,14 +284,14 @@ export default function EmployeeManager() {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center justify-center gap-2">
-                        <button 
+                        <button
                           onClick={() => handleEditEmployee(emp)}
                           className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                           title="แก้ไข"
                         >
                           <Pencil size={18} />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDeleteEmployee(emp.id, emp.name)}
                           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                           title="ลบ"
